@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnapReport</title>
+<style>
+:root {
+  --bg:#101114; --card:#1c1e23; --text:#f5f5f5;
+  --muted:#a5a7ad; --accent:#7c5cff; --border:#30323a;
+}
+body.light {
+  --bg:#f4f5f8; --card:#ffffff; --text:#171820;
+  --muted:#666975; --accent:#6545e8; --border:#e0e1e8;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; padding:20px; background:var(--bg); color:var(--text);
+  font-family:Arial,sans-serif; transition:.2s;
+}
+.container { max-width:850px; margin:auto; }
+header { text-align:center; padding:25px 10px; }
+.logo { font-size:35px; font-weight:800; color:var(--accent); }
+.subtitle { color:var(--muted); margin-top:8px; }
+.toolbar {
+  display:flex; justify-content:center; gap:10px;
+  flex-wrap:wrap; margin:18px 0 25px;
+}
+button {
+  border:1px solid var(--border); background:var(--card);
+  color:var(--text); padding:11px 16px; border-radius:10px;
+  cursor:pointer; font-size:14px;
+}
+button:hover { border-color:var(--accent); }
+.section-title { margin:25px 0 12px; font-size:18px; }
+.categories {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:10px;
+}
+.category {
+  text-align:left; padding:15px; border:1px solid var(--border);
+  border-radius:12px; background:var(--card); color:var(--text);
+  cursor:pointer;
+}
+.category.active { border:2px solid var(--accent); }
+.category small { display:block; color:var(--muted); margin-top:6px; }
+.reports { display:grid; gap:14px; margin-top:18px; }
+.report-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:18px;
+}
+.report-card h3 { margin:0 0 12px; }
+.report-text {
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:10px; padding:14px; line-height:1.6;
+  color:var(--text); white-space:pre-wrap;
+}
+.copy-btn {
+  margin-top:12px; background:var(--accent); color:white;
+  border:0; font-weight:bold;
+}
+footer { text-align:center; color:var(--muted); margin:35px 0 10px; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <div class="logo">SnapReport</div>
+  <div class="subtitle" id="subtitle">Simple and organized reporting templates</div>
+</header>
+
+<div class="toolbar">
+  <button onclick="toggleLanguage()" id="langBtn">کوردی</button>
+  <button onclick="toggleTheme()" id="themeBtn">☀️ Light mode</button>
+</div>
+
+<h2 class="section-title" id="categoriesTitle">Report Categories</h2>
+<div class="categories" id="categories"></div>
+
+<h2 class="section-title" id="reportsTitle">Report Templates</h2>
+<div class="reports" id="reports"></div>
+
+<footer>SnapReport — Reporting templates</footer>
+</div>
+
+<script>
+const templates = [
+ {
+  id:"harassment",
+  en:"Harassment and Bullying",
+  ku:"هەراسانکردن و قسەی ناشیرین",
+  descEn:"Report abusive or harassing behavior",
+  descKu:"ڕاپۆرتی هەراسانکردن و سووکایەتی",
+  text:"Hello Snapchat Support,\n\nI am reporting this account for harassment and abusive behavior. The account appears to be targeting or intimidating other users. Please review the reported activity and take appropriate action in accordance with Snapchat's Community Guidelines.\n\nThank you."
+ },
+ {
+  id:"impersonation",
+  en:"Impersonation",
+  ku:"خۆ بە کەسی تر ناساندن",
+  descEn:"Report an account pretending to be someone else",
+  descKu:"ڕاپۆرتی ئەکاونتی خۆ بە کەسی تر ناساندن",
+  text:"Hello Snapchat Support,\n\nI am reporting this account for impersonation. It appears to be pretending to be another person without permission, which may mislead other users. Please investigate this account and take appropriate action under Snapchat's policies.\n\nThank you."
+ },
+ {
+  id:"privacy",
+  en:"Privacy Violation",
+  ku:"پێشێلکردنی تایبەتمەندی",
+  descEn:"Report content shared without permission",
+  descKu:"ڕاپۆرتی بڵاوکردنەوەی ناوەڕۆک بەبێ ڕەزامەندی",
+  text:"Hello Snapchat Support,\n\nI am reporting this account for a potential privacy violation. It appears to be sharing personal images or information without the consent of the people involved. Please review the content carefully and take appropriate action to protect the affected individuals.\n\nThank you."
+ },
+ {
+  id:"underage",
+  en:"Underage Account",
+  ku:"ئەکاونتی کەم تەمەن",
+  descEn:"Report a potentially underage user",
+  descKu:"ڕاپۆرتی ئەکاونتی گومانلێکراوی کەم تەمەن",
+  text:"Hello Snapchat Support,\n\nI am reporting this account because the user may not meet Snapchat's minimum age requirement. Please review the account and verify whether it complies with Snapchat's age requirements and applicable policies.\n\nThank you."
+ },
+ {
+  id:"hacked",
+  en:"Hacked Account",
+  ku:"ئەکاونتی هاککراو",
+  descEn:"Report an account that may be compromised",
+  descKu:"ڕاپۆرتی ئەکاونتی گومانلێکراوی هاککراو",
+  text:"Hello Snapchat Support,\n\nI am reporting this account because it may have been compromised or accessed by someone without authorization. Please investigate the account's security status and take appropriate steps to help protect its owner.\n\nThank you."
+ },
+ {
+  id:"spam",
+  en:"Spam and Fake Activity",
+  ku:"سپام و چالاکی ساختە",
+  descEn:"Report spam or misleading activity",
+  descKu:"ڕاپۆرتی سپام یان چالاکیی گومڕاکەر",
+  text:"Hello Snapchat Support,\n\nI am reporting this account for suspected spam or misleading activity. The account appears to be engaging in behavior that may violate Snapchat's Community Guidelines. Please review the account and take appropriate action if a violation is confirmed.\n\nThank you."
+ }
+];
+
+let language = localStorage.getItem("snapLanguage") || "en";
+let theme = localStorage.getItem("snapTheme") || "dark";
+let selected = "";
+
+function applyTheme() {
+  document.body.classList.toggle("light", theme === "light");
+  document.getElementById("themeBtn").textContent =
+    theme === "light" ? "🌙 Dark mode" : "☀️ Light mode";
+  localStorage.setItem("snapTheme", theme);
+}
+
+function toggleTheme() {
+  theme = theme === "dark" ? "light" : "dark";
+  applyTheme();
+}
+
+function toggleLanguage() {
+  language = language === "en" ? "ku" : "en";
+  localStorage.setItem("snapLanguage", language);
+  render();
+}
+
+function moveToTop(id) {
+  selected = id;
+  render();
+}
+
+function copyText(text, button) {
+  const original = button.textContent;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      button.textContent = language === "ku" ? "کۆپی کرا ✓" : "Copied ✓";
+      setTimeout(() => button.textContent = original, 1600);
+    }).catch(() => fallbackCopy(text, button, original));
+  } else {
+    fallbackCopy(text, button, original);
+  }
+}
+
+function fallbackCopy(text, button, original) {
+  const area = document.createElement("textarea");
+  area.value = text;
+  document.body.appendChild(area);
+  area.select();
+  try {
+    document.execCommand("copy");
+    button.textContent = language === "ku" ? "کۆپی کرا ✓" : "Copied ✓";
+  } catch (e) {
+    button.textContent = language === "ku" ? "کۆپی نەکرا" : "Copy failed";
+  }
+  document.body.removeChild(area);
+  setTimeout(() => button.textContent = original, 1600);
+}
+
+function render() {
+  const ku = language === "ku";
+  document.documentElement.lang = ku ? "ku" : "en";
+  document.documentElement.dir = ku ? "rtl" : "ltr";
+
+  document.getElementById("subtitle").textContent = ku
+    ? "قاڵبی ڕاپۆرتکردنی سادە و ڕێکخراو"
+    : "Simple and organized reporting templates";
+
+  document.getElementById("langBtn").textContent = ku ? "English" : "کوردی";
+  document.getElementById("categoriesTitle").textContent = ku
+    ? "جۆرەکانی ڕاپۆرت" : "Report Categories";
+  document.getElementById("reportsTitle").textContent = ku
+    ? "دەقەکانی ڕاپۆرت" : "Report Templates";
+
+  let ordered = [...templates];
+  if (selected) {
+    ordered.sort((a,b) => (a.id === selected ? -1 : b.id === selected ? 1 : 0));
+  }
+
+  const categories = document.getElementById("categories");
+  categories.innerHTML = "";
+  ordered.forEach(item => {
+    const button = document.createElement("button");
+    button.className = "category" + (selected === item.id ? " active" : "");
+    button.innerHTML = `<strong>${ku ? item.ku : item.en}</strong>
+      <small>${ku ? item.descKu : item.descEn}</small>`;
+    button.onclick = () => moveToTop(item.id);
+    categories.appendChild(button);
+  });
+
+  const reports = document.getElementById("reports");
+  reports.innerHTML = "";
+  ordered.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "report-card";
+    const heading = document.createElement("h3");
+    heading.textContent = ku ? item.ku : item.en;
+
+    const text = document.createElement("div");
+    text.className = "report-text";
+    text.textContent = item.text;
+
+    const copy = document.createElement("button");
+    copy.className = "copy-btn";
+    copy.textContent = ku ? "کۆپی کردنی دەق" : "Copy Report";
+    copy.onclick = () => copyText(item.text, copy);
+
+    card.appendChild(heading);
+    card.appendChild(text);
+    card.appendChild(copy);
+    reports.appendChild(card);
+  });
+
+  applyTheme();
+}
+
+applyTheme();
+render();
+</script>
+</body>
+</html>
